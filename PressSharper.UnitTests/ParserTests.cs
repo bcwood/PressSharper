@@ -18,15 +18,15 @@ namespace PressSharper.UnitTests
                         <description>foo description</description>
                         <wp:author>
                             <wp:author_id>1</wp:author_id>
-                            <wp:author_login>testuser1</wp:author_login>
-                            <wp:author_email>testuser1@gmail.com</wp:author_email>
-                            <wp:author_display_name><![CDATA[testuser1]]></wp:author_display_name>
+                            <wp:author_login>johndoe</wp:author_login>
+                            <wp:author_email>johndoe@gmail.com</wp:author_email>
+                            <wp:author_display_name><![CDATA[John Doe]]></wp:author_display_name>
                         </wp:author>
                         <wp:author>
                             <wp:author_id>2</wp:author_id>
-                            <wp:author_login>testuser2</wp:author_login>
-                            <wp:author_email>testuser2@gmail.com</wp:author_email>
-                            <wp:author_display_name><![CDATA[testuser2]]></wp:author_display_name>
+                            <wp:author_login>bobsmith</wp:author_login>
+                            <wp:author_email>bobsmith@gmail.com</wp:author_email>
+                            <wp:author_display_name><![CDATA[Bob Smith]]></wp:author_display_name>
                         </wp:author>
                         <wp:category>
                             <wp:term_id>1</wp:term_id>
@@ -48,7 +48,7 @@ namespace PressSharper.UnitTests
                         </wp:tag>
                         <item>
 		                    <title>test title 1</title>
-		                    <dc:creator>testuser1</dc:creator>
+		                    <dc:creator>johndoe</dc:creator>
 		                    <content:encoded><![CDATA[test body 1]]></content:encoded>
 		                    <wp:post_date_gmt>2010-04-05 06:12:10</wp:post_date_gmt>
 		                    <wp:post_name>test-title-1</wp:post_name>
@@ -61,7 +61,7 @@ namespace PressSharper.UnitTests
 	                    </item>
                         <item>
 		                    <title>test title 2</title>
-		                    <dc:creator>testuser2</dc:creator>
+		                    <dc:creator>bobsmith</dc:creator>
 		                    <content:encoded><![CDATA[test body 2]]></content:encoded>
 		                    <wp:post_date_gmt>2011-04-08 09:58:10</wp:post_date_gmt>
 		                    <wp:post_name>test-title-2</wp:post_name>
@@ -161,7 +161,7 @@ namespace PressSharper.UnitTests
             Assert.True(
                 posts.Any(p => 
                     p.Title == "test title 1" && 
-                    p.Author.Username == "testuser1" && 
+                    p.Author.Username == "johndoe" && 
                     p.Body == "test body 1" && 
                     p.PublishedAtUtc.Month == 4 && 
                     p.PublishedAtUtc.Day == 5 && 
@@ -173,7 +173,7 @@ namespace PressSharper.UnitTests
             Assert.True(
                 posts.Any(p =>
                     p.Title == "test title 2" &&
-                    p.Author.Username == "testuser2" &&
+                    p.Author.Username == "bobsmith" &&
                     p.Body == "test body 2" &&
                     p.PublishedAtUtc.Month == 4 &&
                     p.PublishedAtUtc.Day == 8 &&
