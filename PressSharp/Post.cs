@@ -10,6 +10,7 @@ namespace PressSharp
         public DateTimeOffset PublishedAtUtc { get; set; }
         public Author Author { get; set; }
         public string Body { get; set; }
+        public string Excerpt { get; set; }
         public string Slug { get; set; }
         public IEnumerable<Category> Categories { get; set; }
         public IEnumerable<Tag> Tags { get; set; }

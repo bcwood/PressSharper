@@ -10,7 +10,8 @@ namespace PressSharp
     {
         private static readonly XNamespace WordpressNamespace = "http://wordpress.org/export/1.2/";
         private static readonly XNamespace DublinCoreNamespace = "http://purl.org/dc/elements/1.1/";
-        private static readonly XNamespace RssContentNamespace = "http://purl.org/rss/1.0/modules/content/";
+        private static readonly XNamespace ContentNamespace = "http://purl.org/rss/1.0/modules/content/";
+        private static readonly XNamespace ExcerptNamespace = "http://wordpress.org/export/1.2/excerpt/";
 
         private XElement channelElement;
 
@@ -222,7 +223,7 @@ namespace PressSharp
         {
             var postTitleElement = postElement.Element("title");
             var postUsernameElement = postElement.Element(DublinCoreNamespace + "creator");
-            var postBodyElement = postElement.Element(RssContentNamespace + "encoded");
+            var postBodyElement = postElement.Element(ContentNamespace + "encoded");
             var postPublishedAtUtcElement = postElement.Element(WordpressNamespace + "post_date_gmt");
             var postSlugElement = postElement.Element(WordpressNamespace + "post_name");
             
@@ -235,10 +236,13 @@ namespace PressSharp
                 throw new XmlException("Unable to parse malformed post.");
             }
 
+            var postExcerptElement = postElement.Element(ExcerptNamespace + "encoded");
+
             var post = new Post
             {
                 Author = this.GetAuthorByUsername(postUsernameElement.Value),
                 Body = postBodyElement.Value,
+                Excerpt = postExcerptElement?.Value,
                 PublishedAtUtc = DateTimeOffset.Parse(postPublishedAtUtcElement.Value),
                 Slug = postSlugElement.Value,
                 Title = postTitleElement.Value
