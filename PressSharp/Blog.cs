@@ -19,6 +19,7 @@ namespace PressSharp
         public IEnumerable<Author> Authors { get; set; }
         public IEnumerable<Category> Categories { get; set; }
         public IEnumerable<Tag> Tags { get; set; }
+        public IEnumerable<Attachment> Attachments { get; set; }
 
         public Blog(string xml)
             : this(XDocument.Parse(xml))
@@ -30,6 +31,7 @@ namespace PressSharp
             this.Authors = Enumerable.Empty<Author>();
             this.Categories = Enumerable.Empty<Category>();
             this.Tags = Enumerable.Empty<Tag>();
+            this.Attachments = Enumerable.Empty<Attachment>();
 
             this.InitializeChannelElement(doc);
             
@@ -52,13 +54,14 @@ namespace PressSharp
             this.channelElement = rssRootElement.Element("channel");
         }
 
-        public void Initialize()
+        private void Initialize()
         {
             this.InitializeTitle();
             this.InitializeDescription();
             this.InitializeAuthors();
             this.InitializeCategories();
             this.InitializeTags();
+            this.InitializeAttachments();
         }
 
         private void InitializeTitle()
@@ -84,9 +87,8 @@ namespace PressSharp
 
         private void InitializeAuthors()
         {
-            this.Authors = this.channelElement
-                .Descendants(WordpressNamespace + "author")
-                .Select(ParseAuthorElement);
+            this.Authors = this.channelElement.Descendants(WordpressNamespace + "author")
+                                              .Select(ParseAuthorElement);
         }
 
         private static Author ParseAuthorElement(XElement authorElement)
@@ -114,9 +116,8 @@ namespace PressSharp
 
         private void InitializeCategories()
         {
-            this.Categories = this.channelElement
-                .Descendants(WordpressNamespace + "category")
-                .Select(ParseCategoryElement);
+            this.Categories = this.channelElement.Descendants(WordpressNamespace + "category")
+                                                 .Select(ParseCategoryElement);
         }
 
         private static Category ParseCategoryElement(XElement categoryElement)
@@ -142,9 +143,8 @@ namespace PressSharp
 
         private void InitializeTags()
         {
-            this.Tags = this.channelElement
-                .Descendants(WordpressNamespace + "tag")
-                .Select(ParseTagElement);
+            this.Tags = this.channelElement.Descendants(WordpressNamespace + "tag")
+                                           .Select(ParseTagElement);
         }
 
         private static Tag ParseTagElement(XElement tagElement)
@@ -166,56 +166,56 @@ namespace PressSharp
             return tag;
         }
 
+        private void InitializeAttachments()
+        {
+            this.Attachments = this.channelElement.Elements("item")
+                                                  .Where(e => this.IsAttachmentItem(e) && this.IsPublishedPost(e))
+                                                  .Select(ParseAttachmentElement);
+        }
+
         public IEnumerable<Post> GetPosts()
         {
-            return this.channelElement
-                .Elements("item")
-                .Where(e => 
-                    this.IsPostItem(e) && 
-                    this.IsPublishedPost(e))
-                .Select(ParsePostElement);
+            return this.channelElement.Elements("item")
+                                      .Where(e => this.IsPostItem(e) && this.IsPublishedPost(e))
+                                      .Select(ParsePostElement);
         }
 
         private bool IsPostItem(XElement itemElement)
         {
-            if (itemElement == null)
-            {
-                return false;
-            }
+            return itemElement?.Element(WordpressNamespace + "post_type")?.Value == "post";
+        }
 
-            var postTypeElement = itemElement.Element(WordpressNamespace + "post_type");
-            if (postTypeElement == null)
-            {
-                return false;
-            }
-
-            if (postTypeElement.Value == "post")
-            {
-                return true;
-            }
-
-            return false;
+        private bool IsAttachmentItem(XElement itemElement)
+        {
+            return itemElement?.Element(WordpressNamespace + "post_type")?.Value == "attachment";
         }
 
         private bool IsPublishedPost(XElement itemElement)
         {
-            if (itemElement == null)
+            return itemElement?.Element(WordpressNamespace + "status")?.Value == "publish";
+        }
+
+        private Attachment ParseAttachmentElement(XElement attachmentElement)
+        {
+            var attachmentIdElement = attachmentElement.Element(WordpressNamespace + "post_id");
+            var attachmentTitleElement = attachmentElement.Element("title");
+            var attachmentUrlElement = attachmentElement.Element(WordpressNamespace + "attachment_url");
+
+            if (attachmentIdElement == null ||
+                attachmentTitleElement == null ||
+                attachmentUrlElement == null)
             {
-                return false;
+                throw new XmlException("Unable to parse malformed attachment.");
             }
 
-            var postPublishedStatusElement = itemElement.Element(WordpressNamespace + "status");
-            if(postPublishedStatusElement == null)
+            var attachment = new Attachment()
             {
-                return false;
-            }
+                Id = attachmentIdElement.Value,
+                Title = attachmentTitleElement.Value,
+                Url = attachmentUrlElement.Value
+            };
 
-            if (postPublishedStatusElement.Value == "publish")
-            {
-                return true;
-            }
-
-            return false;
+            return attachment;
         }
 
         private Post ParsePostElement(XElement postElement)
@@ -225,7 +225,7 @@ namespace PressSharp
             var postBodyElement = postElement.Element(RssContentNamespace + "encoded");
             var postPublishedAtUtcElement = postElement.Element(WordpressNamespace + "post_date_gmt");
             var postSlugElement = postElement.Element(WordpressNamespace + "post_name");
-
+            
             if (postTitleElement == null ||
                 postUsernameElement == null ||
                 postBodyElement == null ||
@@ -273,12 +273,25 @@ namespace PressSharp
             post.Categories = categories;
             post.Tags = tags;
 
+            var postMetaElements = postElement.Elements(WordpressNamespace + "postmeta");
+            foreach (var postMeta in postMetaElements)
+            {
+                var metaKeyElement = postMeta.Element(WordpressNamespace + "meta_key");
+                if (metaKeyElement.Value == "_thumbnail_id")
+                {
+                    var metaValueElement = postMeta.Element(WordpressNamespace + "meta_value");
+                    string attachmentId = metaValueElement?.Value;
+                    post.FeaturedImage = this.GetAttachmentById(attachmentId);
+                    break;
+                }
+            }
+
             return post;
         }
 
-        private Author GetAuthorByUsername(string value)
+        private Author GetAuthorByUsername(string username)
         {
-            return this.Authors.FirstOrDefault(a => a.Username == value);
+            return this.Authors.FirstOrDefault(a => a.Username == username);
         }
 
         private Category GetCategoryBySlug(string categorySlug)
@@ -289,6 +302,11 @@ namespace PressSharp
         private Tag GetTagBySlug(string tagSlug)
         {
             return this.Tags.FirstOrDefault(t => t.Slug == tagSlug);
+        }
+
+        private Attachment GetAttachmentById(string attachmentId)
+        {
+            return this.Attachments.FirstOrDefault(a => a.Id == attachmentId);
         }
     }
 }

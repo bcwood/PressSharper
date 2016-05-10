@@ -13,7 +13,8 @@ namespace PressSharp
         public string Slug { get; set; }
         public IEnumerable<Category> Categories { get; set; }
         public IEnumerable<Tag> Tags { get; set; }
-
+        public Attachment FeaturedImage { get; set; }
+        
         public Post()
         {
             this.Categories = Enumerable.Empty<Category>();
