@@ -8,8 +8,8 @@
     <ProjectGuid>{71289E4E-9FA1-4AA0-9AA7-EAF54470F37A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PressSharp</RootNamespace>
-    <AssemblyName>PressSharp</AssemblyName>
+    <RootNamespace>PressSharper</RootNamespace>
+    <AssemblyName>PressSharper</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

@@ -1,4 +1,4 @@
-﻿namespace PressSharp
+﻿namespace PressSharper
 {
     public class Author
     {

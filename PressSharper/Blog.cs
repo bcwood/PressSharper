@@ -4,7 +4,7 @@ using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace PressSharp
+namespace PressSharper
 {
     public class Blog
     {

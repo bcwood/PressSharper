@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using Xunit;
 
-namespace PressSharp.UnitTests
+namespace PressSharper.UnitTests
 {
     public class BlogTests
     {
