@@ -170,15 +170,22 @@ namespace PressSharper
         private void InitializeAttachments()
         {
             this.Attachments = this.channelElement.Elements("item")
-                                                  .Where(e => this.IsAttachmentItem(e) && this.IsPublishedPost(e))
+                                                  .Where(e => this.IsAttachmentItem(e) && this.IsPublished(e))
                                                   .Select(ParseAttachmentElement);
         }
 
         public IEnumerable<Post> GetPosts()
         {
             return this.channelElement.Elements("item")
-                                      .Where(e => this.IsPostItem(e) && this.IsPublishedPost(e))
+                                      .Where(e => this.IsPostItem(e) && this.IsPublished(e))
                                       .Select(ParsePostElement);
+        }
+
+        public IEnumerable<Page> GetPages()
+        {
+            return this.channelElement.Elements("item")
+                                      .Where(e => this.IsPageItem(e) && this.IsPublished(e))
+                                      .Select(ParsePageElement);
         }
 
         private bool IsPostItem(XElement itemElement)
@@ -186,12 +193,17 @@ namespace PressSharper
             return itemElement?.Element(WordpressNamespace + "post_type")?.Value == "post";
         }
 
+        private bool IsPageItem(XElement itemElement)
+        {
+            return itemElement?.Element(WordpressNamespace + "post_type")?.Value == "page";
+        }
+
         private bool IsAttachmentItem(XElement itemElement)
         {
             return itemElement?.Element(WordpressNamespace + "post_type")?.Value == "attachment";
         }
 
-        private bool IsPublishedPost(XElement itemElement)
+        private bool IsPublished(XElement itemElement)
         {
             return itemElement?.Element(WordpressNamespace + "status")?.Value == "publish";
         }
@@ -224,13 +236,13 @@ namespace PressSharper
             var postTitleElement = postElement.Element("title");
             var postUsernameElement = postElement.Element(DublinCoreNamespace + "creator");
             var postBodyElement = postElement.Element(ContentNamespace + "encoded");
-            var postPublishedAtUtcElement = postElement.Element(WordpressNamespace + "post_date_gmt");
+            var postPublishDateElement = postElement.Element(WordpressNamespace + "post_date");
             var postSlugElement = postElement.Element(WordpressNamespace + "post_name");
             
             if (postTitleElement == null ||
                 postUsernameElement == null ||
                 postBodyElement == null ||
-                postPublishedAtUtcElement == null ||
+                postPublishDateElement == null ||
                 postSlugElement == null)
             {
                 throw new XmlException("Unable to parse malformed post.");
@@ -243,7 +255,7 @@ namespace PressSharper
                 Author = this.GetAuthorByUsername(postUsernameElement.Value),
                 Body = postBodyElement.Value,
                 Excerpt = postExcerptElement?.Value,
-                PublishedAtUtc = DateTimeOffset.Parse(postPublishedAtUtcElement.Value),
+                PublishDate = DateTime.Parse(postPublishDateElement.Value),
                 Slug = postSlugElement.Value,
                 Title = postTitleElement.Value
             };
@@ -291,6 +303,41 @@ namespace PressSharper
             }
 
             return post;
+        }
+
+        private Page ParsePageElement(XElement pageElement)
+        {
+            var pageIdElement = pageElement.Element(WordpressNamespace + "post_id");
+            var pageParentIdElement = pageElement.Element(WordpressNamespace + "post_parent");
+            var pageTitleElement = pageElement.Element("title");
+            var pageUsernameElement = pageElement.Element(DublinCoreNamespace + "creator");
+            var pageBodyElement = pageElement.Element(ContentNamespace + "encoded");
+            var pagePublishDateElement = pageElement.Element(WordpressNamespace + "post_date");
+            var pageSlugElement = pageElement.Element(WordpressNamespace + "post_name");
+
+            if (pageIdElement == null ||
+                pageParentIdElement == null || 
+                pageTitleElement == null ||
+                pageUsernameElement == null ||
+                pageBodyElement == null ||
+                pagePublishDateElement == null ||
+                pageSlugElement == null)
+            {
+                throw new XmlException("Unable to parse malformed page.");
+            }
+
+            var page = new Page
+            {
+                Id = int.Parse(pageIdElement.Value),
+                ParentId = pageParentIdElement.Value != "0" ? int.Parse(pageParentIdElement.Value) : (int?) null,
+                Author = this.GetAuthorByUsername(pageUsernameElement.Value),
+                Body = pageBodyElement.Value,
+                PublishDate = DateTime.Parse(pagePublishDateElement.Value),
+                Slug = pageSlugElement.Value,
+                Title = pageTitleElement.Value
+            };
+
+            return page;
         }
 
         private Author GetAuthorByUsername(string username)

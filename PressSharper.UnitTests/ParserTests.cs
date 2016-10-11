@@ -5,7 +5,7 @@ namespace PressSharper.UnitTests
 {
     public class BlogTests
     {
-        private const string WordpressXml =
+        private const string WORDPRESS_XML =
             @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
                 <rss version=""2.0""
 	                xmlns:excerpt=""http://wordpress.org/export/1.2/excerpt/""
@@ -50,7 +50,7 @@ namespace PressSharper.UnitTests
 		                    <title>test title 1</title>
 		                    <dc:creator>johndoe</dc:creator>
 		                    <content:encoded><![CDATA[test body 1]]></content:encoded>
-		                    <wp:post_date_gmt>2010-04-05 06:12:10</wp:post_date_gmt>
+		                    <wp:post_date>2010-04-05 06:12:10</wp:post_date>
 		                    <wp:post_name>test-title-1</wp:post_name>
 		                    <wp:status>publish</wp:status>
 		                    <wp:post_type>post</wp:post_type>
@@ -63,7 +63,7 @@ namespace PressSharper.UnitTests
 		                    <title>test title 2</title>
 		                    <dc:creator>bobsmith</dc:creator>
 		                    <content:encoded><![CDATA[test body 2]]></content:encoded>
-		                    <wp:post_date_gmt>2011-04-08 09:58:10</wp:post_date_gmt>
+		                    <wp:post_date>2011-04-08 09:58:10</wp:post_date>
 		                    <wp:post_name>test-title-2</wp:post_name>
 		                    <wp:status>publish</wp:status>
 		                    <wp:post_type>post</wp:post_type>
@@ -72,29 +72,51 @@ namespace PressSharper.UnitTests
 		                    <category domain=""post_tag"" nicename=""tag-one""><![CDATA[]]></category>
 		                    <category domain=""post_tag"" nicename=""tag-two""><![CDATA[]]></category>
 	                    </item>
+                        <item>
+		                    <title>About</title>
+		                    <dc:creator>bobsmith</dc:creator>
+		                    <content:encoded><![CDATA[This is the about page]]></content:encoded>
+		                    <wp:post_id>1</wp:post_id>
+		                    <wp:post_parent>0</wp:post_parent>
+		                    <wp:post_date>2012-05-09 09:58:10</wp:post_date>
+		                    <wp:post_name>about</wp:post_name>
+		                    <wp:status>publish</wp:status>
+		                    <wp:post_type>page</wp:post_type>
+	                    </item>
+                        <item>
+		                    <title>Contact Us</title>
+		                    <dc:creator>bobsmith</dc:creator>
+		                    <content:encoded><![CDATA[This is the contact page]]></content:encoded>
+		                    <wp:post_id>2</wp:post_id>
+		                    <wp:post_parent>1</wp:post_parent>
+		                    <wp:post_date>2012-05-09 09:58:10</wp:post_date>
+		                    <wp:post_name>contact-us</wp:post_name>
+		                    <wp:status>publish</wp:status>
+		                    <wp:post_type>page</wp:post_type>
+	                    </item>
                     </channel>
                 </rss>";
 
         [Fact]
-        public void Can_parse_blog_title()
+        public void Can_Parse_Blog_Title()
         {
-            var blog = new Blog(WordpressXml);
+            var blog = new Blog(WORDPRESS_XML);
 
             Assert.Equal("foo title", blog.Title);
         }
 
         [Fact]
-        public void Can_parse_blog_description()
+        public void Can_Parse_Blog_Description()
         {
-            var blog = new Blog(WordpressXml);
+            var blog = new Blog(WORDPRESS_XML);
 
             Assert.Equal("foo description", blog.Description);
         }
 
         [Fact]
-        public void Can_parse_authors()
+        public void Can_Parse_Authors()
         {
-            var blog = new Blog(WordpressXml);
+            var blog = new Blog(WORDPRESS_XML);
 
             Assert.Equal(2, blog.Authors.Count());
 
@@ -112,9 +134,9 @@ namespace PressSharper.UnitTests
         }
 
         [Fact]
-        public void Can_parse_categories()
+        public void Can_Parse_Categories()
         {
-            var blog = new Blog(WordpressXml);
+            var blog = new Blog(WORDPRESS_XML);
 
             Assert.Equal(2, blog.Categories.Count());
 
@@ -132,9 +154,9 @@ namespace PressSharper.UnitTests
         }
 
         [Fact]
-        public void Can_parse_tags()
+        public void Can_Parse_Tags()
         {
-            var blog = new Blog(WordpressXml);
+            var blog = new Blog(WORDPRESS_XML);
 
             Assert.Equal(2, blog.Tags.Count());
 
@@ -150,9 +172,9 @@ namespace PressSharper.UnitTests
         }
 
         [Fact]
-        public void Can_parse_posts()
+        public void Can_Parse_Posts()
         {
-            var blog = new Blog(WordpressXml);
+            var blog = new Blog(WORDPRESS_XML);
 
             var posts = blog.GetPosts();
 
@@ -163,9 +185,9 @@ namespace PressSharper.UnitTests
                     p.Title == "test title 1" && 
                     p.Author.Username == "johndoe" && 
                     p.Body == "test body 1" && 
-                    p.PublishedAtUtc.Month == 4 && 
-                    p.PublishedAtUtc.Day == 5 && 
-                    p.PublishedAtUtc.Year == 2010 && 
+                    p.PublishDate.Month == 4 && 
+                    p.PublishDate.Day == 5 && 
+                    p.PublishDate.Year == 2010 && 
                     p.Slug == "test-title-1" && 
                     p.Categories.Count() == 2 && 
                     p.Tags.Count() == 2));
@@ -175,12 +197,46 @@ namespace PressSharper.UnitTests
                     p.Title == "test title 2" &&
                     p.Author.Username == "bobsmith" &&
                     p.Body == "test body 2" &&
-                    p.PublishedAtUtc.Month == 4 &&
-                    p.PublishedAtUtc.Day == 8 &&
-                    p.PublishedAtUtc.Year == 2011 &&
+                    p.PublishDate.Month == 4 &&
+                    p.PublishDate.Day == 8 &&
+                    p.PublishDate.Year == 2011 &&
                     p.Slug == "test-title-2" &&
                     p.Categories.Count() == 2 &&
                     p.Tags.Count() == 2));
+        }
+
+        [Fact]
+        public void Can_Parse_Pages()
+        {
+            var blog = new Blog(WORDPRESS_XML);
+
+            var pages = blog.GetPages();
+
+            Assert.Equal(2, pages.Count());
+
+            Assert.True(
+                pages.Any(p =>
+                    p.Id == 1 &&
+                    p.ParentId == null &&
+                    p.Title == "About" &&
+                    p.Author.Username == "bobsmith" &&
+                    p.Body == "This is the about page" &&
+                    p.PublishDate.Month == 5 &&
+                    p.PublishDate.Day == 9 &&
+                    p.PublishDate.Year == 2012 &&
+                    p.Slug == "about"));
+
+            Assert.True(
+                pages.Any(p =>
+                    p.Id == 2 &&
+                    p.ParentId == 1 &&
+                    p.Title == "Contact Us" &&
+                    p.Author.Username == "bobsmith" &&
+                    p.Body == "This is the contact page" &&
+                    p.PublishDate.Month == 5 &&
+                    p.PublishDate.Day == 9 &&
+                    p.PublishDate.Year == 2012 &&
+                    p.Slug == "contact-us"));
         }
     }
 }

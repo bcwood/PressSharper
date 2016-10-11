@@ -7,7 +7,7 @@ namespace PressSharper
     public class Post
     {
         public string Title { get; set; }
-        public DateTimeOffset PublishedAtUtc { get; set; }
+        public DateTime PublishDate { get; set; }
         public Author Author { get; set; }
         public string Body { get; set; }
         public string Excerpt { get; set; }
