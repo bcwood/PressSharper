@@ -100,7 +100,7 @@ namespace PressSharper
 
             var author = new Author
             {
-                Id = authorIdElement.Value,
+                Id = int.Parse(authorIdElement.Value),
                 Username = authorUsernameElement.Value,
                 Email = authorEmailElement.Value,
                 DisplayName = authorDisplayNameElement.Value
@@ -165,7 +165,7 @@ namespace PressSharper
 
             var attachment = new Attachment()
             {
-                Id = attachmentIdElement.Value,
+                Id = int.Parse(attachmentIdElement.Value),
                 Title = attachmentTitleElement.Value,
                 Url = attachmentUrlElement.Value
             };
