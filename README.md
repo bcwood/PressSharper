@@ -1,10 +1,12 @@
 # PressSharper
 
+[![Build status](https://ci.appveyor.com/api/projects/status/9lta6tnix409s64r?svg=true)](https://ci.appveyor.com/project/bcwood/presssharper)
+
 A C# class library for parsing WordPress XML export data.
 
 Ever had a need to deal with exported WordPress XML data in a .NET project? I have, and since there wasn't a good solution out there already, I decided to create one. The result is PressSharper. It's a simple class library to provide an API to the exported WordPress XML data. 
 
-It's also available as a NuGet package:
+## Install from NuGet
 
     Install-Package PressSharper
 
