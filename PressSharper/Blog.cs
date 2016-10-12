@@ -18,8 +18,6 @@ namespace PressSharper
         public string Title { get; set; }
         public string Description { get; set; }
         public IEnumerable<Author> Authors { get; set; }
-        public IEnumerable<Category> Categories { get; set; }
-        public IEnumerable<Tag> Tags { get; set; }
         public IEnumerable<Attachment> Attachments { get; set; }
 
         public Blog(string xml)
@@ -30,8 +28,6 @@ namespace PressSharper
         public Blog(XDocument doc)
         {
             this.Authors = Enumerable.Empty<Author>();
-            this.Categories = Enumerable.Empty<Category>();
-            this.Tags = Enumerable.Empty<Tag>();
             this.Attachments = Enumerable.Empty<Attachment>();
 
             this.InitializeChannelElement(doc);
@@ -60,8 +56,6 @@ namespace PressSharper
             this.InitializeTitle();
             this.InitializeDescription();
             this.InitializeAuthors();
-            this.InitializeCategories();
-            this.InitializeTags();
             this.InitializeAttachments();
         }
 
@@ -115,62 +109,10 @@ namespace PressSharper
             return author;
         }
 
-        private void InitializeCategories()
-        {
-            this.Categories = this.channelElement.Descendants(WordpressNamespace + "category")
-                                                 .Select(ParseCategoryElement);
-        }
-
-        private static Category ParseCategoryElement(XElement categoryElement)
-        {
-            var categoryIdElement = categoryElement.Element(WordpressNamespace + "term_id");
-            var categoryNameElement = categoryElement.Element(WordpressNamespace + "cat_name");
-            var categorySlugElement = categoryElement.Element(WordpressNamespace + "category_nicename");
-
-            if (categoryIdElement == null || categoryNameElement == null || categorySlugElement == null)
-            {
-                throw new XmlException("Unable to parse malformed category.");
-            }
-
-            var category = new Category
-            {
-                Id = categoryIdElement.Value,
-                Name = categoryNameElement.Value,
-                Slug = categorySlugElement.Value
-            };
-
-            return category;
-        }
-
-        private void InitializeTags()
-        {
-            this.Tags = this.channelElement.Descendants(WordpressNamespace + "tag")
-                                           .Select(ParseTagElement);
-        }
-
-        private static Tag ParseTagElement(XElement tagElement)
-        {
-            var tagIdElement = tagElement.Element(WordpressNamespace + "term_id");
-            var tagSlugElement = tagElement.Element(WordpressNamespace + "tag_slug");
-
-            if (tagIdElement == null || tagSlugElement == null)
-            {
-                throw new XmlException("Unable to parse malformed category.");
-            }
-
-            var tag = new Tag
-            {
-                Id = tagIdElement.Value,
-                Slug = tagSlugElement.Value
-            };
-
-            return tag;
-        }
-
         private void InitializeAttachments()
         {
             this.Attachments = this.channelElement.Elements("item")
-                                                  .Where(e => this.IsAttachmentItem(e) && this.IsPublished(e))
+                                                  .Where(e => this.IsAttachmentItem(e))
                                                   .Select(ParseAttachmentElement);
         }
 
@@ -260,9 +202,7 @@ namespace PressSharper
                 Title = postTitleElement.Value
             };
 
-            var categories = new List<Category>();
-            var tags = new List<Tag>();
-
+            // get categories and tags
             var wpCategoriesElements = postElement.Elements("category");
             foreach (var wpCategory in wpCategoriesElements)
             {
@@ -274,31 +214,36 @@ namespace PressSharper
 
                 if (domainAttribute.Value == "category")
                 {
-                    string categorySlug = wpCategory.Attribute("nicename").Value;
-                    var category = this.GetCategoryBySlug(categorySlug);
-                    categories.Add(category);
+                    post.Categories.Add(new Category
+                    {
+                        Slug = wpCategory.Attribute("nicename")?.Value,
+                        Name = wpCategory.Value
+                    });
                 }
                 else if (domainAttribute.Value == "post_tag")
                 {
-                    string tagSlug = wpCategory.Attribute("nicename").Value;
-                    var tag = this.GetTagBySlug(tagSlug);
-                    tags.Add(tag);
+                    post.Tags.Add(new Tag
+                    {
+                        Slug = wpCategory.Attribute("nicename")?.Value,
+                        Name = wpCategory.Value
+                    });
                 }
             }
 
-            post.Categories = categories;
-            post.Tags = tags;
-
+            // get featured image
             var postMetaElements = postElement.Elements(WordpressNamespace + "postmeta");
             foreach (var postMeta in postMetaElements)
             {
                 var metaKeyElement = postMeta.Element(WordpressNamespace + "meta_key");
-                if (metaKeyElement.Value == "_thumbnail_id")
+                if (metaKeyElement?.Value == "_thumbnail_id")
                 {
                     var metaValueElement = postMeta.Element(WordpressNamespace + "meta_value");
-                    string attachmentId = metaValueElement?.Value;
-                    post.FeaturedImage = this.GetAttachmentById(attachmentId);
-                    break;
+                    if (metaValueElement?.Value != null)
+                    {
+                        int attachmentId = int.Parse(metaValueElement.Value);
+                        post.FeaturedImage = this.GetAttachmentById(attachmentId);
+                        break;
+                    }
                 }
             }
 
@@ -345,17 +290,7 @@ namespace PressSharper
             return this.Authors.FirstOrDefault(a => a.Username == username);
         }
 
-        private Category GetCategoryBySlug(string categorySlug)
-        {
-            return this.Categories.FirstOrDefault(c => c.Slug == categorySlug);
-        }
-
-        private Tag GetTagBySlug(string tagSlug)
-        {
-            return this.Tags.FirstOrDefault(t => t.Slug == tagSlug);
-        }
-
-        private Attachment GetAttachmentById(string attachmentId)
+        private Attachment GetAttachmentById(int attachmentId)
         {
             return this.Attachments.FirstOrDefault(a => a.Id == attachmentId);
         }

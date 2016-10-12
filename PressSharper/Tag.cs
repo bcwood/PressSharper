@@ -1,9 +1,7 @@
-﻿
-namespace PressSharper
+﻿namespace PressSharper
 {
-    public class Tag
+    public class Tag : Category
     {
-        public string Id { get; set; }
-        public string Slug { get; set; }
+        
     }
 }
