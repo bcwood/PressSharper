@@ -1,0 +1,44 @@
+version: 1.2.0.{build}
+
+environment:
+  packageVersion: 1.2.0
+
+init:
+- ps: $env:buildVersion = "$env:packageVersion.$env:appveyor_build_number"
+- ps: $env:nugetVersion = "$env:packageVersion-beta-$env:appveyor_build_number"
+- ps: Update-AppveyorBuild -Version $env:buildVersion
+
+assembly_info:
+  patch: true
+  file: '**\AssemblyInfo.*'
+  assembly_version: '$(buildVersion)'
+  assembly_file_version: '$(buildVersion)'
+  assembly_informational_version: '$(nugetVersion)'
+
+configuration: Release
+
+nuget:
+  account_feed: true
+  project_feed: true
+  disable_publish_on_pr: true
+
+before_build:
+- nuget restore
+
+build:
+  verbosity: minimal
+
+after_build:
+- ps: nuget pack PressSharper.nuspec -version "$env:nugetVersion"
+
+artifacts:
+- path: 'PressSharper*.nupkg'
+  name: nuget-package
+
+deploy:
+- provider: NuGet
+  api_key:
+    secure: LVIQjOhYYPA26RnRMxwmAFjAGLwYOQOrCkk9hnQfxFwiU/VNosz5BxGvuUJ+ETtm
+  artifact: nuget-package
+  on:
+    branch: master
