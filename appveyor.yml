@@ -5,7 +5,7 @@ environment:
 
 init:
 - ps: $env:buildVersion = "$env:packageVersion.$env:appveyor_build_number"
-- ps: $env:nugetVersion = "$env:packageVersion-beta-$env:appveyor_build_number"
+- ps: $env:nugetVersion = "$env:packageVersion"
 - ps: Update-AppveyorBuild -Version $env:buildVersion
 
 assembly_info:
