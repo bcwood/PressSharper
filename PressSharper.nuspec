@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package >
+    <metadata>
+        <id>$id$</id>
+        <version>$version$</version>
+        <title>$id$</title>
+        <description>$description$</description>
+        <authors>$author$</authors>
+        <owners>$author$</owners>
+        <projectUrl>https://github.com/bcwood/PressSharper</projectUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <copyright>2012 Ben Lakey, 2016 Brandon Wood</copyright>
+        <tags>WordPress</tags>
+        <releaseNotes>Fixed loading of categories and tags.</releaseNotes>
+    </metadata>
+</package>

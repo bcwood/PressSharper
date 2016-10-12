@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("PressSharper")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("A C# class library for parsing WordPress XML export data.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Brandon Wood")]
 [assembly: AssemblyProduct("PressSharper")]
-[assembly: AssemblyCopyright("Copyright © 2012 Ben Lakey, © 2016 Brandon Wood")]
+[assembly: AssemblyCopyright("Copyright 2012 Ben Lakey, 2016 Brandon Wood")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
