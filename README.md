@@ -1,6 +1,6 @@
 # PressSharper
 
-[![Build status](https://ci.appveyor.com/api/projects/status/9lta6tnix409s64r?svg=true)](https://ci.appveyor.com/project/bcwood/presssharper)
+[![Build status](https://ci.appveyor.com/api/projects/status/9lta6tnix409s64r?svg=true)](https://ci.appveyor.com/project/bcwood/presssharper) [![NuGet](https://img.shields.io/nuget/v/PressSharper.svg?maxAge=2592000)](https://www.nuget.org/packages/PressSharper/)
 
 A C# class library for parsing WordPress XML export data.
 
